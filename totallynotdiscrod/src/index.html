@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Websockets</title>
+  </head>
+  <body>
+    <div id="outpoot">
+
+    </div>
+    <input id="inpoot" autocomplete="off">
+    <button onclick="sendit()">Sendit!</button>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script type="text/javascript">
+    let name = "Jenna";
+    let color = "#2cc7a3";
+
+    const ws = new WebSocket(`ws://localhost:8080/?name=${name}`);
+
+    ws.onopen = function() {
+      console.log('Connected');
+    }
+
+    ws.onmessage = function(message) {
+      let data = message.data.split("|")
+      let outpootBox = document.getElementById('outpoot');
+      outpootBox.innerHTML += `<span style='color: ${data[1]}'>${data[0]}: </span>` + marked(data[2]) + `<br>`;
+      console.log(message.data)
+    }
+function sendit() {
+  let data = document.getElementById('inpoot').value;
+  ws.send(name + "|" + color + "|" + data);
+}
+
+  </script>
+</html>

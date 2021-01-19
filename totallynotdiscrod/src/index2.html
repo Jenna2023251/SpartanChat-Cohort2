@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+​
+
+<head>
+  <meta charset="utf-8">
+  <title>Websockets</title>
+  <style media="screen">
+    #outpoot {
+      width: 100%;
+      height: 650px;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
+  </style>
+</head>
+​
+
+<body>
+  <div id="outpoot">
+  </div>
+  <input id="inpoot" autocomplete="off">
+  <button onclick="sendit()">Sendit!</button>
+  <div id="userlist">
+  </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script type="text/javascript">
+  // sets username to Jenna
+  var userName = "Jenna";
+  // sets username color to blue
+  var nameColor = "#22A0F1";
+
+  // creates object named boxes and sets values
+  var boxes = {
+    outpoot: document.getElementById('outpoot'),
+    inpoot: document.getElementById('inpoot'),
+    userlist: document.getElementById('userlist'),
+    sendbutton: document.getElementById('sendbutton')
+  };
+
+  // assigns variable to websocket host server
+  const ws = new WebSocket(`ws://192.168.64.235:8080/`);
+  // calls function when connection is enabled, console sends message
+  ws.onopen = function() {
+    console.log('Connected');
+  // sends data to server, converts to JSON string
+    ws.send(
+      JSON.stringify({
+        type: 'connect',
+        name: userName
+      }));
+  }
+  // when user sends a message this function is called
+  ws.onmessage = function(message) {
+  // data turns into a JavaScript object
+    let data = JSON.parse(message.data);
+  // if data.type is equal to userlist, this will occur.
+    if (data.type == 'userlist') {
+      boxes.userlist.innerHTML = ""
+    // calls function for each element
+      data.names.forEach(function(name) {
+    // adds name and line break to the userlist
+        boxes.userlist.innerHTML += name + '<br>';
+      });
+    // occurs if not equal to userlist
+    } else if (data.type == 'message') {
+      boxes.outpoot.innerHTML +=
+        `<span style='color: ${data.color}' title='${data.date}'>` +
+        `${data.name}: </span>` +
+        data.message +
+        `<br>`;
+    // fixes chat box scrolling
+      boxes.outpoot.scrollTop = boxes.outpoot.scrollHeight;
+    }
+  }
+    // creates function sendit, allows user to send a message when button is clicked
+  function sendit() {
+    // assigns data identifier to these values
+    let data = {
+      type: "message",
+      message: boxes.inpoot.value,
+      color: nameColor,
+      name: userName,
+      date: new Date().toString()
+    }
+    // converts data to JSON string
+    ws.send(JSON.stringify(data));
+  }
+</script>
+
+</html>
